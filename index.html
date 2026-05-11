@@ -60,39 +60,34 @@ let currentPreviewKey = null; // ключ трека, который сейча�
 let progressTimer = null;
 
 function setPlayingState(key){
-  // Маленькая обложка в списке треков
+  // Маленькая кнопка ПРЕВЬЮ справа в списке треков
   const smallIcon = document.getElementById('preview-icon-'+key);
   if(smallIcon){
-    smallIcon.innerHTML = '<div style="display:flex;gap:2px"><div style="width:2px;height:8px;background:#fff;border-radius:1px"></div><div style="width:2px;height:8px;background:#fff;border-radius:1px"></div></div>';
-    smallIcon.style.background = 'rgba(180,255,150,0.85)';
+    smallIcon.innerHTML = '<div style="display:flex;gap:3px"><div style="width:3px;height:10px;background:#0a0a0f;border-radius:1px"></div><div style="width:3px;height:10px;background:#0a0a0f;border-radius:1px"></div></div>';
   }
-  // Большой плеер на странице трека
+  const smallLabel = document.getElementById('preview-label-'+key);
+  if(smallLabel){
+    smallLabel.textContent = 'ИГРАЕТ';
+  }
+  // Большая кнопка на странице трека
   const largeIcon = document.getElementById('preview-icon-'+key+'-large');
   if(largeIcon){
     largeIcon.outerHTML = '<div id="preview-icon-'+key+'-large" style="display:flex;gap:4px"><div style="width:4px;height:16px;background:#0a0a0f;border-radius:2px"></div><div style="width:4px;height:16px;background:#0a0a0f;border-radius:2px"></div></div>';
-  }
-  // Лейбл превью
-  const label = document.getElementById('preview-label-'+key);
-  if(label){
-    label.textContent = '■ ИГРАЕТ';
-    label.style.color = 'rgba(180,255,150,0.95)';
   }
 }
 
 function setIdleState(key){
   const smallIcon = document.getElementById('preview-icon-'+key);
   if(smallIcon){
-    smallIcon.innerHTML = '<div style="width:0;height:0;border-left:5px solid #fff;border-top:3px solid transparent;border-bottom:3px solid transparent;margin-left:1px"></div>';
-    smallIcon.style.background = 'rgba(0,0,0,0.65)';
+    smallIcon.innerHTML = '<div style="width:0;height:0;border-left:8px solid #0a0a0f;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px"></div>';
+  }
+  const smallLabel = document.getElementById('preview-label-'+key);
+  if(smallLabel){
+    smallLabel.textContent = '15 СЕК';
   }
   const largeIcon = document.getElementById('preview-icon-'+key+'-large');
   if(largeIcon){
     largeIcon.outerHTML = '<div id="preview-icon-'+key+'-large" style="width:0;height:0;border-left:14px solid #0a0a0f;border-top:9px solid transparent;border-bottom:9px solid transparent;margin-left:3px"></div>';
-  }
-  const label = document.getElementById('preview-label-'+key);
-  if(label){
-    label.textContent = '▶ ПРЕВЬЮ';
-    label.style.color = 'rgba(255,150,200,0.85)';
   }
   const progress = document.getElementById('preview-progress-'+key);
   if(progress) progress.style.width = '0%';
@@ -151,31 +146,43 @@ function trackRow(num, key){
   const t = TRACKS[key];
   const badge = t.audioOnly ? '♪ АУДИО' : '▶ ВИДЕО';
   const badgeStyle = t.audioOnly ? 'background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.55)' : 'background:rgba(255,80,200,0.15);color:rgba(255,150,200,0.85)';
-  const aiTag = t.ai ? '<div style="position:absolute;top:2px;left:2px;background:rgba(255,80,200,0.85);padding:0 3px;border-radius:2px;font-family:ui-monospace,monospace;font-size:6px;color:#fff">AI</div>' : '';
+  const aiTag = t.ai ? '<div style="position:absolute;top:2px;left:2px;background:rgba(255,80,200,0.85);padding:0 3px;border-radius:2px;font-family:ui-monospace,monospace;font-size:6px;color:#fff;z-index:2">AI</div>' : '';
   let subText = '';
   if(t.audioOnly) subText = ' · feat. Heronwater';
   else if(t.sub.indexOf('×') > -1) subText = ' · ' + t.sub.split('×')[1].trim();
   else if(t.sub.indexOf('feat') > -1) subText = ' · ' + t.sub;
   else subText = ' · соло';
-  const thumbBg = t.cover 
-    ? 'background:url("'+t.cover+'") center/cover'
-    : 'background:'+t.grad;
 
-  // Если у трека есть превью-аудио, обложка превращается в play-кнопку для сэмпла
-  if(t.preview){
-    return '<div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:10px">'+
-      '<div data-preview="'+key+'" data-preview-src="'+t.preview+'" style="width:44px;height:44px;border-radius:6px;'+thumbBg+';flex-shrink:0;position:relative;cursor:pointer" title="послушать превью">'+
-        aiTag +
-        '<div id="preview-icon-'+key+'" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:18px;height:18px;background:rgba(0,0,0,0.65);border-radius:50%;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:5px solid #fff;border-top:3px solid transparent;border-bottom:3px solid transparent;margin-left:1px"></div></div>'+
-      '</div>'+
-      '<div data-nav="track_'+key+'" style="flex:1;min-width:0;cursor:pointer">'+
-        '<div style="font-size:12px;color:#fff;font-weight:500">'+t.title+subText+'</div>'+
-        '<div style="display:flex;align-items:center;gap:6px;margin-top:4px"><div style="display:inline-block;padding:1px 6px;border-radius:3px;font-family:ui-monospace,monospace;font-size:8px;letter-spacing:1px;'+badgeStyle+'">'+badge+'</div><div id="preview-label-'+key+'" style="font-family:ui-monospace,monospace;font-size:8px;color:rgba(255,150,200,0.85);letter-spacing:1px">▶ ПРЕВЬЮ</div></div>'+
-      '</div>'+
+  // Обложка слева — фото если есть, иначе градиент. Сама обложка ведёт на страницу трека.
+  let thumb;
+  if(t.cover){
+    thumb = '<div data-nav="track_'+key+'" style="width:48px;height:48px;border-radius:6px;flex-shrink:0;position:relative;cursor:pointer;overflow:hidden">'+
+      '<img src="'+t.cover+'" alt="'+t.title+'" style="width:100%;height:100%;object-fit:cover;display:block">'+
+      aiTag +
+    '</div>';
+  } else {
+    thumb = '<div data-nav="track_'+key+'" style="width:48px;height:48px;border-radius:6px;background:'+t.grad+';flex-shrink:0;position:relative;cursor:pointer">'+
+      aiTag +
     '</div>';
   }
 
-  return '<div data-nav="track_'+key+'" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:10px"><div style="width:44px;height:44px;border-radius:6px;'+thumbBg+';flex-shrink:0;position:relative">'+aiTag+'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:rgba(0,0,0,0.55);border-radius:50%;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:4px solid #fff;border-top:2.5px solid transparent;border-bottom:2.5px solid transparent;margin-left:1px"></div></div></div><div style="flex:1;min-width:0"><div style="font-size:12px;color:#fff;font-weight:500">'+t.title+subText+'</div><div style="display:inline-block;margin-top:4px;padding:1px 6px;border-radius:3px;font-family:ui-monospace,monospace;font-size:8px;letter-spacing:1px;'+badgeStyle+'">'+badge+'</div></div></div>';
+  // Кнопка ПРЕВЬЮ справа (только если есть preview-файл)
+  let previewBtn = '';
+  if(t.preview){
+    previewBtn = '<div data-preview="'+key+'" data-preview-src="'+t.preview+'" style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;background:rgba(180,255,150,0.12);border:0.5px solid rgba(180,255,150,0.35);border-radius:8px;cursor:pointer;transition:all 0.15s" title="послушать превью">'+
+      '<div id="preview-icon-'+key+'" style="width:24px;height:24px;background:rgba(180,255,150,0.95);border-radius:50%;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:8px solid #0a0a0f;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px"></div></div>'+
+      '<div id="preview-label-'+key+'" style="font-family:ui-monospace,monospace;font-size:7px;color:rgba(180,255,150,0.95);letter-spacing:1px;line-height:1">15 СЕК</div>'+
+    '</div>';
+  }
+
+  return '<div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:10px">'+
+    thumb +
+    '<div data-nav="track_'+key+'" style="flex:1;min-width:0;cursor:pointer">'+
+      '<div style="font-size:12px;color:#fff;font-weight:500">'+t.title+subText+'</div>'+
+      '<div style="display:inline-block;margin-top:4px;padding:1px 6px;border-radius:3px;font-family:ui-monospace,monospace;font-size:8px;letter-spacing:1px;'+badgeStyle+'">'+badge+'</div>'+
+    '</div>'+
+    previewBtn +
+  '</div>';
 }
 
 screens.home = {
