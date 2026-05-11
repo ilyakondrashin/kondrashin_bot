@@ -200,10 +200,28 @@ function navBtn(label, sub, target){
 function backBtn(){return '<div data-nav="home" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);padding:10px 12px;border-radius:8px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1.5px">←</div><div style="font-size:13px;color:#fff;font-weight:500;margin-top:2px">В ЗАКРЕП</div><div style="font-size:10px;color:rgba(255,255,255,0.45)">главная панель</div></div>';}
 
 function ytEmbed(videoId, start, end){
-  let url = 'https://www.youtube.com/embed/'+videoId+'?rel=0&modestbranding=1';
-  if(start !== undefined) url += '&start='+start;
-  if(end !== undefined) url += '&end='+end;
-  return '<iframe class="yt-iframe" src="'+url+'" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>';
+  // Вместо встроенного плеера — кликабельный постер (Telegram Web App блокирует YouTube iframe).
+  // Клик открывает YouTube приложение / Safari.
+  const watchUrl = 'https://www.youtube.com/watch?v='+videoId;
+  const posterUrl = 'https://img.youtube.com/vi/'+videoId+'/maxresdefault.jpg';
+  return '<a href="'+watchUrl+'" target="_blank" rel="noopener" style="text-decoration:none;display:block">'+
+    '<div style="position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden;cursor:pointer">'+
+      '<img src="'+posterUrl+'" alt="YouTube видео" style="width:100%;height:100%;object-fit:cover;display:block" onerror="this.src=\'https://img.youtube.com/vi/'+videoId+'/hqdefault.jpg\'">'+
+      // Тёмное наложение
+      '<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.15) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,0) 70%,rgba(0,0,0,0.5) 100%)"></div>'+
+      // Большая play-кнопка по центру (стиль YouTube)
+      '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:68px;height:48px;background:rgba(255,0,0,0.95);border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.5)">'+
+        '<div style="width:0;height:0;border-left:18px solid #fff;border-top:11px solid transparent;border-bottom:11px solid transparent;margin-left:4px"></div>'+
+      '</div>'+
+      // Плашка YouTube в углу
+      '<div style="position:absolute;top:10px;right:12px;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);padding:3px 8px;border-radius:4px;display:flex;align-items:center;gap:5px">'+
+        '<div style="width:14px;height:10px;background:#ff0000;border-radius:2px;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:4px solid #fff;border-top:2.5px solid transparent;border-bottom:2.5px solid transparent;margin-left:1px"></div></div>'+
+        '<div style="font-family:ui-monospace,monospace;font-size:9px;color:#fff;letter-spacing:0.5px;font-weight:600">YOUTUBE</div>'+
+      '</div>'+
+      // Подсказка снизу
+      '<div style="position:absolute;bottom:10px;left:12px;font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.95);letter-spacing:1px;text-shadow:0 1px 4px rgba(0,0,0,0.8)">▶ СМОТРЕТЬ КЛИП</div>'+
+    '</div>'+
+  '</a>';
 }
 
 function trackRow(num, key){
