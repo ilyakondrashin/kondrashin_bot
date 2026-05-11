@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KONDRASHIN · Channel</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#1a1a22;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:20px 10px;color:#e8e8ec}
+.app-wrap{width:100%;max-width:400px}
+.app-hint{text-align:center;font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:12px;line-height:1.5}
+.phone-frame{background:#0a0a0f;border-radius:18px;overflow:hidden;border:0.5px solid rgba(255,255,255,0.15);position:relative}
+.phone-header{background:#161620;padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:10}
+.back-btn{font-family:ui-monospace,monospace;font-size:16px;color:rgba(255,255,255,0.7);cursor:pointer;padding:4px 8px;display:none;user-select:none}
+.back-btn:hover{color:#fff}
+.channel-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1a2440 0%,#050510 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:ui-monospace,monospace;font-size:11px;color:#fff;font-weight:500}
+.channel-name{font-size:13px;color:#fff;font-weight:500}
+.screen-label{font-size:10px;color:rgba(255,255,255,0.45)}
+.screen-container{min-height:500px}
+[data-nav]{cursor:pointer;transition:all 0.15s}
+.app-credit{text-align:center;font-size:11px;color:rgba(255,255,255,0.4);margin-top:14px}
+.yt-iframe{width:100%;aspect-ratio:16/9;border:none;display:block;background:#000}
+</style>
+</head>
+<body>
+<div class="app-wrap">
+  <div class="app-hint">👇 тыкай по кнопкам · YouTube играет внутри сайта<br>стрелка ← возвращает обратно</div>
+  <div id="phone-frame" class="phone-frame">
+    <div class="phone-header">
+      <div id="back-btn" class="back-btn">←</div>
+      <div class="channel-avatar">K</div>
+      <div style="flex:1;min-width:0">
+        <div class="channel-name">KONDRASHIN</div>
+        <div id="screen-label" class="screen-label">канал · закреп</div>
+      </div>
+    </div>
+    <div id="screen-container" class="screen-container"></div>
+  </div>
+  <div class="app-credit">канал · v2 · реальные YouTube-плееры</div>
+</div>
+
+<script>
+(function(){
+const TRACKS = {
+  nezasypay: {id:'2WNUsuktvgE', title:'Не засыпай', sub:'Kondrashin × Code80', date:'12/2025', desc:'Совместный клип с Code80. Один из самых ярких релизов прошлого года — холодный, ночной, без сна.', credits:[['РЕЖИССЁР','Олег Олжабаев'],['АРТ-ДИРЕКТОР','dubstepbassok'],['АРТИСТЫ','Kondrashin × Code80']], grad:'linear-gradient(135deg,#0a1828 0%,#15304a 50%,#050a14 100%)', bts:'behind_code80'},
+  tremolo: {id:'VwrWUfzw1ss', title:'Tremolo', sub:'соло · Kondrashin', date:'01/2025', desc:'Сольный клип — про вибрацию, дрожь, эффект.', credits:[['РЕЖИССЁР','vadim nezrim'],['МОНТАЖ','risujannise'],['АРТИСТ','Kondrashin']], grad:'linear-gradient(135deg,#2a1530 0%,#5a3060 50%,#1a0f1f 100%)'},
+  wannakill: {id:'2VAkRAa3Gxg', title:'Wanna Kill', sub:'соло · полностью ИИ-клип', date:'07/2025', desc:'Первый ИИ-клип. Сделан полностью нейросетями под моим креативным руководством.', credits:[['КРЕАТИВНЫЙ ДИР.','Илья Кондрашин'],['АРТ-ДИРЕКТОР','dubstepbassok'],['АРТИСТ','Kondrashin']], grad:'linear-gradient(135deg,#1a0a2a 0%,#4a1a5a 30%,#1a0518 70%,#050008 100%)', ai:true},
+  jiguli: {id:'quIMrQfLYi0', title:'Жигулёвск', sub:'соло · Kondrashin', date:'2024', desc:'Сольный сингл. Снимали у себя дома — там, где я вырос. Без больших бюджетов. Только своё.', credits:[['РЕЖИССЁР + МОНТАЖ','zillberman'],['АРТИСТ','Kondrashin']], grad:'linear-gradient(180deg,#6b5a3a 0%,#8a7548 30%,#4a3a20 80%,#1a1410 100%)', bts:'behind_jiguli'},
+  vp1zdu: {id:'v69C37BxlnQ', title:'VP1zdu', sub:'соло · Kondrashin', date:'2025', desc:'Сольный трек. Название — как тег, как handle в нижнем интернете.', credits:[['АРТИСТ','Kondrashin']], grad:'linear-gradient(135deg,#0a0510 0%,#2a1545 40%,#1a0828 70%,#050008 100%)'},
+  altai: {id:null, title:'Алтайские травы', sub:'feat. Heronwater', date:'аудио', desc:'Один из самых ранних фитов. Без клипа — только звук.', credits:[['АРТИСТЫ','Kondrashin × Heronwater']], grad:'linear-gradient(135deg,#2a4a1a 0%,#5a7a30 50%,#1a2a0a 100%)', audioOnly:true}
+};
+
+const screens = {};
+const history = ['home'];
+
+function navBtn(label, sub, target){
+  return '<div data-nav="'+target+'" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);padding:10px 12px;border-radius:8px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1.5px">→</div><div style="font-size:13px;color:#fff;font-weight:500;margin-top:2px">'+label+'</div><div style="font-size:10px;color:rgba(255,255,255,0.45)">'+sub+'</div></div>';
+}
+function backBtn(){return '<div data-nav="home" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);padding:10px 12px;border-radius:8px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1.5px">←</div><div style="font-size:13px;color:#fff;font-weight:500;margin-top:2px">В ЗАКРЕП</div><div style="font-size:10px;color:rgba(255,255,255,0.45)">главная панель</div></div>';}
+
+function ytEmbed(videoId, start, end){
+  let url = 'https://www.youtube.com/embed/'+videoId+'?rel=0&modestbranding=1';
+  if(start !== undefined) url += '&start='+start;
+  if(end !== undefined) url += '&end='+end;
+  return '<iframe class="yt-iframe" src="'+url+'" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>';
+}
+
+function trackRow(num, key){
+  const t = TRACKS[key];
+  const badge = t.audioOnly ? '♪ АУДИО' : '▶ ВИДЕО';
+  const badgeStyle = t.audioOnly ? 'background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.55)' : 'background:rgba(255,80,200,0.15);color:rgba(255,150,200,0.85)';
+  const aiTag = t.ai ? '<div style="position:absolute;top:2px;left:2px;background:rgba(255,80,200,0.85);padding:0 3px;border-radius:2px;font-family:ui-monospace,monospace;font-size:6px;color:#fff">AI</div>' : '';
+  let subText = '';
+  if(t.audioOnly) subText = ' · feat. Heronwater';
+  else if(t.sub.indexOf('×') > -1) subText = ' · ' + t.sub.split('×')[1].trim();
+  else if(t.sub.indexOf('feat') > -1) subText = ' · ' + t.sub;
+  else subText = ' · соло';
+  return '<div data-nav="track_'+key+'" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:10px"><div style="width:44px;height:44px;border-radius:6px;background:'+t.grad+';flex-shrink:0;position:relative">'+aiTag+'<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:rgba(0,0,0,0.55);border-radius:50%;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:4px solid #fff;border-top:2.5px solid transparent;border-bottom:2.5px solid transparent;margin-left:1px"></div></div></div><div style="flex:1;min-width:0"><div style="font-size:12px;color:#fff;font-weight:500">'+t.title+subText+'</div><div style="display:inline-block;margin-top:4px;padding:1px 6px;border-radius:3px;font-family:ui-monospace,monospace;font-size:8px;letter-spacing:1px;'+badgeStyle+'">'+badge+'</div></div></div>';
+}
+
+screens.home = {
+  label: 'канал · закреп',
+  showBack: false,
+  html: 
+    ytEmbed('2WNUsuktvgE') +
+    '<div style="padding:14px;color:#e8e8ec">'+
+      '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:8px">PINNED · ЗАКРЕП</div>'+
+      '<div style="font-size:18px;font-weight:500;color:#fff;letter-spacing:2px">KONDRASHIN</div>'+
+      '<div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:1.5;margin:4px 0 14px">хип-хоп между эпохами.<br>альбом «мне известно» — 12 треков с фитами:<br><span style="color:rgba(255,255,255,0.7)">Drake · Lil Wayne · Snoop Dogg</span> и ещё 9.</div>'+
+
+      '<div data-nav="album" style="background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,255,255,0.2);padding:10px 12px;border-radius:8px;margin-bottom:12px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:1.5px">★ СЛУШАТЬ АЛЬБОМ</div><div style="font-size:13px;color:#fff;font-weight:500;margin-top:2px">Spotify · Apple · VK · Я.Музыка ▶</div><div style="font-size:10px;color:rgba(255,255,255,0.55)">12 треков · с фитами</div></div>'+
+
+      '<div data-nav="kanye" style="background:linear-gradient(135deg,rgba(255,80,200,0.18) 0%,rgba(255,40,100,0.08) 100%);border:0.5px solid rgba(255,150,200,0.4);padding:14px;border-radius:8px;margin-bottom:14px;position:relative;overflow:hidden">'+
+        '<div style="position:absolute;top:-8px;right:0;font-family:serif;font-size:64px;color:rgba(255,255,255,0.12);line-height:1;pointer-events:none">?</div>'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,180,220,0.85);letter-spacing:2px">★ ДОЛЖЕН ВЫЙТИ · 2026</div><div style="display:flex;align-items:center;gap:4px"><div style="width:6px;height:6px;background:#ff3c5c;border-radius:50%"></div><div style="font-family:ui-monospace,monospace;font-size:8px;color:rgba(255,180,220,0.85);letter-spacing:1px">SOON</div></div></div>'+
+        '<div style="font-size:16px;font-weight:500;color:#fff;letter-spacing:0.5px">KONDRASHIN × ye</div>'+
+        '<div style="font-size:12px;color:rgba(255,255,255,0.7);margin:4px 0 10px">фит с Канье Уэстом выйдет в 2026.</div>'+
+        '<div style="font-family:serif;font-style:italic;font-size:12px;color:rgba(255,180,220,0.9);padding:6px 10px;background:rgba(0,0,0,0.25);border-left:2px solid rgba(255,150,200,0.6);margin-bottom:10px">или это интернет-легенда?</div>'+
+        '<div style="margin-top:10px;padding-top:8px;border-top:0.5px solid rgba(255,255,255,0.1);font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,180,220,0.7);letter-spacing:1px;text-align:center">→ УЗНАТЬ ВСЮ ИСТОРИЮ</div>'+
+      '</div>'+
+
+      '<div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:2px;margin-bottom:10px">— ТРЕКИ —</div>'+
+      trackRow('01','altai')+
+      trackRow('02','tremolo')+
+      trackRow('03','nezasypay')+
+      trackRow('04','jiguli')+
+      trackRow('05','wannakill')+
+      trackRow('06','vp1zdu')+
+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px">'+
+        navBtn('ЗА КАДРОМ','как это сделано','behind')+
+        navBtn('АУКЦИОНЫ','редкости от меня','auctions')+
+        navBtn('ЖИВЬЁМ','даты концертов','live')+
+        navBtn('СВЯЗЬ','писать мне','contact')+
+      '</div>'+
+      '<div style="margin-top:14px;padding-top:12px;border-top:0.5px solid rgba(255,255,255,0.08);display:flex;justify-content:space-between;font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4)"><span>NEXT DROP</span><span>ye · 2026 ?</span></div>'+
+    '</div>'
+};
+
+function trackPage(key){
+  const t = TRACKS[key];
+  let creditsHtml = '';
+  t.credits.forEach(function(c,i){
+    const border = i < t.credits.length-1 ? 'border-bottom:0.5px solid rgba(255,255,255,0.06);' : '';
+    creditsHtml += '<div style="display:flex;justify-content:space-between;padding:6px 0;'+border+'"><div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:1px">'+c[0]+'</div><div style="font-size:12px;color:#fff;font-weight:500">'+c[1]+'</div></div>';
+  });
+
+  let header;
+  if(t.audioOnly){
+    header = '<div style="background:'+t.grad+';aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative"><div style="width:60px;height:60px;background:rgba(0,0,0,0.55);border:1.5px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center"><div style="font-size:28px;color:#fff;line-height:1">♪</div></div><div style="position:absolute;top:10px;left:12px;font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.7);letter-spacing:1.5px">♪ АУДИО</div></div>';
+  } else {
+    header = ytEmbed(t.id);
+  }
+
+  let actionBtns = '';
+  if(!t.audioOnly){
+    actionBtns = '<div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:2px;margin-bottom:8px">— ПОСМОТРЕТЬ —</div>'+
+      '<a href="https://www.youtube.com/watch?v='+t.id+'" target="_blank" rel="noopener" style="text-decoration:none;display:block"><div style="background:#ff0000;padding:12px;border-radius:8px;display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="width:28px;height:28px;background:rgba(0,0,0,0.2);border-radius:6px;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:8px solid #fff;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px"></div></div><div style="flex:1"><div style="font-size:13px;color:#fff;font-weight:500">Полный клип на YouTube</div><div style="font-size:10px;color:rgba(255,255,255,0.85)">HD · в новой вкладке</div></div><div style="font-family:ui-monospace,monospace;font-size:12px;color:rgba(255,255,255,0.9)">↗</div></div></a>';
+  }
+
+  let streamBtn = '';
+  if(t.audioOnly){
+    streamBtn = '<div data-nav="album" style="background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,255,255,0.2);padding:12px;border-radius:8px;margin-bottom:14px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:1.5px">★ СЛУШАТЬ НА СТРИМИНГАХ</div><div style="font-size:13px;color:#fff;margin-top:2px">Spotify · Apple · VK · Я.Музыка ▶</div></div>';
+  }
+
+  const btsButton = t.bts ? navBtn('ЗА КАДРОМ','этот клип',t.bts) : navBtn('ЗА КАДРОМ','все съёмки','behind');
+
+  return header +
+    '<div style="padding:14px;color:#e8e8ec">'+
+      '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px">— '+(t.audioOnly?'ТРЕК':'КЛИП')+' '+t.date+' —</div>'+
+      '<div style="font-size:20px;font-weight:500;color:#fff">'+t.title+'</div>'+
+      '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 14px">'+t.sub+'</div>'+
+      '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:14px">'+t.desc+'</div>'+
+      streamBtn +
+      actionBtns +
+      '<div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);padding:12px;border-radius:8px;margin-bottom:14px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:2px;margin-bottom:8px">— КОМАНДА —</div>'+creditsHtml+'</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+
+        btsButton+
+        navBtn('АУКЦИОНЫ','редкости','auctions')+
+        navBtn('АЛЬБОМ','слушать','album')+
+        backBtn()+
+      '</div>'+
+    '</div>';
+}
+
+Object.keys(TRACKS).forEach(function(key){
+  screens['track_'+key] = {
+    label: TRACKS[key].audioOnly ? 'трек · '+TRACKS[key].title.toLowerCase() : 'клип · '+TRACKS[key].title.toLowerCase(),
+    showBack: true,
+    html: trackPage(key)
+  };
+});
+
+screens.album = {
+  label: 'альбом · мне известно',
+  showBack: true,
+  html: '<div style="background:linear-gradient(135deg,#0a0a0f 0%,#1a2440 40%,#0f1828 70%,#050510 100%);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative"><div style="text-align:center"><div style="font-family:ui-monospace,monospace;font-size:8px;color:rgba(255,255,255,0.5);letter-spacing:4px;margin-bottom:8px">ALBUM · 2025</div><div style="font-size:22px;font-weight:500;color:#fff;letter-spacing:4px">МНЕ</div><div style="font-size:22px;font-weight:500;color:#fff;letter-spacing:4px;margin-top:2px">ИЗВЕСТНО</div></div></div>'+
+    '<div style="padding:14px;color:#e8e8ec">'+
+      '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px">— АЛЬБОМ —</div>'+
+      '<div style="font-size:22px;font-weight:500;color:#fff">Мне известно</div>'+
+      '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 14px">12 треков · 2025</div>'+
+      '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:14px">Drake, Lil Wayne, Snoop Dogg и ещё девять имён. Альбом, которого не должно было быть. Но он есть.</div>'+
+      '<div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:2px;margin-bottom:10px">— СЛУШАТЬ —</div>'+
+      '<div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);padding:10px 12px;border-radius:8px;margin-bottom:6px;display:flex;align-items:center;gap:10px"><div style="width:24px;height:24px;border-radius:50%;background:#1DB954"></div><div style="flex:1;font-size:13px;color:#fff">Spotify</div></div>'+
+      '<div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);padding:10px 12px;border-radius:8px;margin-bottom:6px;display:flex;align-items:center;gap:10px"><div style="width:24px;height:24px;border-radius:50%;background:#fa243c"></div><div style="flex:1;font-size:13px;color:#fff">Apple Music</div></div>'+
+      '<div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);padding:10px 12px;border-radius:8px;margin-bottom:6px;display:flex;align-items:center;gap:10px"><div style="width:24px;height:24px;border-radius:50%;background:#ffcc00"></div><div style="flex:1;font-size:13px;color:#fff">Я.Музыка</div></div>'+
+      '<div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);padding:10px 12px;border-radius:8px;margin-bottom:14px;display:flex;align-items:center;gap:10px"><div style="width:24px;height:24px;border-radius:50%;background:#0077ff"></div><div style="flex:1;font-size:13px;color:#fff">VK Музыка</div></div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+navBtn('КЛИПЫ','смотреть','home')+backBtn()+'</div>'+
+    '</div>'
+};
+
+screens.kanye = {
+  label: 'KONDRASHIN × ye',
+  showBack: true,
+  html: '<div style="background:linear-gradient(135deg,#1a0518 0%,#4a1a3a 25%,#ff3c5c 55%,#2a0a18 80%,#050008 100%);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative"><div style="position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);font-family:serif;font-size:120px;color:rgba(255,255,255,0.15);line-height:1">?</div><div style="text-align:center;position:relative"><div style="font-family:ui-monospace,monospace;font-size:8px;color:rgba(255,255,255,0.7);letter-spacing:4px;margin-bottom:6px">★ ДОЛЖЕН ВЫЙТИ · 2026</div><div style="font-size:22px;font-weight:500;color:#fff;letter-spacing:2px;line-height:1">KONDRASHIN</div><div style="font-family:serif;font-style:italic;font-size:14px;color:rgba(255,255,255,0.7);margin:4px 0">×</div><div style="font-size:22px;font-weight:500;color:#fff;letter-spacing:2px;line-height:1">ye</div></div><div style="position:absolute;bottom:8px;left:0;right:0;text-align:center;font-family:serif;font-style:italic;font-size:11px;color:rgba(255,255,255,0.75)">или это интернет-легенда?</div></div>'+
+    '<div style="padding:14px;color:#e8e8ec">'+
+      '<div style="font-size:18px;font-weight:500;color:#fff">фит с Канье Уэстом</div>'+
+      '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 14px">релиз 2026 · права куплены</div>'+
+      '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:18px">Трек готов. Лицензия оформлена. Релиз в 2026.<br><br>Параллельно весь интернет уже снимает мемы — будто всё это шутка. Может, и шутка. Но трек выйдет.</div>'+
+      '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,180,220,0.7);letter-spacing:2px;margin-bottom:12px">— ПОСТЫ В РАЗДЕЛЕ —</div>'+
+      '<div data-nav="kanye_p1" style="background:linear-gradient(135deg,rgba(255,80,200,0.12),rgba(255,40,100,0.04));border:0.5px solid rgba(255,150,200,0.3);padding:10px;border-radius:8px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:10px"><div style="width:22px;height:22px;background:rgba(255,150,200,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-size:10px;color:#fff">01</div><div><div style="font-size:13px;color:#fff;font-weight:500">Анонс</div><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,180,220,0.7)">SERIOUS</div></div></div></div>'+
+      '<div data-nav="kanye_p2" style="background:linear-gradient(135deg,rgba(255,80,200,0.12),rgba(255,40,100,0.04));border:0.5px solid rgba(255,150,200,0.3);padding:10px;border-radius:8px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:10px"><div style="width:22px;height:22px;background:rgba(255,150,200,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-size:10px;color:#fff">02</div><div><div style="font-size:13px;color:#fff;font-weight:500">Видеотизер · 15 секунд</div><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,180,220,0.7)">TEASER</div></div></div></div>'+
+      '<div data-nav="kanye_p3" style="background:linear-gradient(135deg,rgba(255,200,80,0.1),rgba(255,100,40,0.04));border:0.5px solid rgba(255,200,150,0.3);padding:10px;border-radius:8px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:10px"><div style="width:22px;height:22px;background:rgba(255,200,150,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-size:10px;color:#fff">03</div><div><div style="font-size:13px;color:#fff;font-weight:500">«Госуслуги подтверждают»</div><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,200,150,0.85)">MEME</div></div></div></div>'+
+      '<div data-nav="kanye_p4" style="background:linear-gradient(135deg,rgba(255,200,80,0.1),rgba(255,100,40,0.04));border:0.5px solid rgba(255,200,150,0.3);padding:10px;border-radius:8px;margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px"><div style="width:22px;height:22px;background:rgba(255,200,150,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-size:10px;color:#fff">04</div><div><div style="font-size:13px;color:#fff;font-weight:500">«Канье везде»</div><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,200,150,0.85)">MEME · ПОДБОРКА</div></div></div></div>'+
+      '<div style="font-family:serif;font-style:italic;font-size:12px;color:rgba(255,180,220,0.85);text-align:center;padding:8px 0 14px">пока ждём — смеёмся.<br>потом — слушаем.</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+navBtn('АЛЬБОМ','слушать сейчас','album')+backBtn()+'</div>'+
+    '</div>'
+};
+
+function kanyePost(num, title, type, body){
+  const isPink = type === 'SERIOUS' || type === 'TEASER';
+  const bg = isPink ? 'linear-gradient(135deg,rgba(255,80,200,0.12),rgba(255,40,100,0.04))' : 'linear-gradient(135deg,rgba(255,200,80,0.1),rgba(255,100,40,0.04))';
+  const borderC = isPink ? 'rgba(255,150,200,0.3)' : 'rgba(255,200,150,0.3)';
+  const labelC = isPink ? 'rgba(255,180,220,0.85)' : 'rgba(255,200,150,0.85)';
+  return '<div style="padding:14px;color:#e8e8ec"><div style="background:'+bg+';border:0.5px solid '+borderC+';padding:14px;border-radius:8px;margin-bottom:14px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="width:26px;height:26px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-size:11px;color:#fff">'+num+'</div><div><div style="font-size:14px;color:#fff;font-weight:500">'+title+'</div><div style="font-family:ui-monospace,monospace;font-size:9px;color:'+labelC+';letter-spacing:1px">'+type+'</div></div></div>'+body+'</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+navBtn('РАЗДЕЛ','все 4 поста','kanye')+backBtn()+'</div></div>';
+}
+
+screens.kanye_p1 = {label:'канье · анонс', showBack:true, html: kanyePost('01','Анонс','SERIOUS','<div style="font-size:16px;color:#fff;font-weight:500;line-height:1.3;margin-bottom:10px">KONDRASHIN feat. Kanye West</div><div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6">Трек готов.<br>Лицензия оформлена.<br>Релиз в 2026 году.</div><div style="margin-top:12px;padding-top:10px;border-top:0.5px solid rgba(255,255,255,0.08);font-family:serif;font-style:italic;font-size:12px;color:rgba(255,180,220,0.85)">или это интернет-легенда?</div>')};
+
+screens.kanye_p2 = {label:'канье · тизер', showBack:true, html: kanyePost('02','Видеотизер · 15 секунд','TEASER','<div style="position:relative;width:100%;aspect-ratio:9/16;max-height:320px;background:linear-gradient(180deg,#1a0518 0%,#4a1a3a 30%,#ff3c5c 60%,#2a0a18 100%);border-radius:6px;overflow:hidden;margin-bottom:10px"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50px;height:50px;background:rgba(0,0,0,0.55);border:1.5px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:13px solid #fff;border-top:8px solid transparent;border-bottom:8px solid transparent;margin-left:3px"></div></div><div style="position:absolute;top:8px;left:10px;display:flex;align-items:center;gap:5px"><div style="width:6px;height:6px;background:#ff3535;border-radius:50%"></div><div style="font-family:ui-monospace,monospace;font-size:9px;color:#fff">00:15</div></div></div><div style="font-size:12px;color:rgba(255,255,255,0.65);line-height:1.5;text-align:center">фрагмент из клипа · полная версия в 2026</div>')};
+
+screens.kanye_p3 = {label:'канье · госуслуги', showBack:true, html: kanyePost('03','«Госуслуги подтверждают»','MEME · НАРОДНОЕ','<div style="background:#f0f4ff;padding:20px 16px;border-radius:8px;color:#0a0a0f;text-align:center;margin-bottom:12px"><div style="font-size:22px;font-weight:500;margin-bottom:6px"><span style="color:#003ab9">гос</span><span style="color:#d62127">у</span><span style="color:#003ab9">слуги</span></div><div style="font-size:11px;color:#555;margin-bottom:14px">Русский 🇷🇺</div><div style="font-size:17px;font-weight:500;line-height:1.3">Мы подтверждаем<br>выход фита Kanye<br>West и Kondrashin</div></div><div style="font-size:12px;color:rgba(255,255,255,0.75);text-align:center;font-style:italic">подтверждение коллаборации на госуслугах</div>')};
+
+screens.kanye_p4 = {label:'канье · везде', showBack:true, html: kanyePost('04','«Канье везде»','MEME · ПОДБОРКА','<div style="font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:12px">Канье в Одноклассниках, ВК, Twitter, Instagram, Telegram «ye» — все «подтверждают».</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:6px;padding:10px;aspect-ratio:1"><div style="font-family:ui-monospace,monospace;font-size:8px;color:rgba(255,200,150,0.7);letter-spacing:1px">ОК</div><div style="font-size:11px;color:#fff;margin-top:4px">Канье Вест</div><div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px">«я — железный человек»</div></div><div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:6px;padding:10px;aspect-ratio:1"><div style="font-family:ui-monospace,monospace;font-size:8px;color:rgba(255,200,150,0.7);letter-spacing:1px">VK</div><div style="font-size:11px;color:#fff;margin-top:4px">Kanye &amp; Ty Dolla</div><div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px">«ееебать пацаны фит готов»</div></div><div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:6px;padding:10px;aspect-ratio:1"><div style="font-family:ui-monospace,monospace;font-size:8px;color:rgba(255,200,150,0.7);letter-spacing:1px">TW · YE</div><div style="font-size:11px;color:#fff;margin-top:4px">@kanyewest</div><div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px">«KONDRASHIN feat. Kanye»</div></div><div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:6px;padding:10px;aspect-ratio:1"><div style="font-family:ui-monospace,monospace;font-size:8px;color:rgba(255,200,150,0.7);letter-spacing:1px">TG · YE</div><div style="font-size:11px;color:#fff;margin-top:4px">21 402 подписчика</div><div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px">«Фит с Канье готов»</div></div></div>')};
+
+screens.behind = {
+  label: 'за кадром',
+  showBack: true,
+  html: '<div style="padding:14px;color:#e8e8ec">'+
+    '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px">— ЗА КАДРОМ —</div>'+
+    '<div style="font-size:20px;font-weight:500;color:#fff">Внутренняя кухня</div>'+
+    '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 18px">всё, что не вошло в клипы</div>'+
+    '<div data-nav="behind_sock" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:8px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4)">02/2026 · ТАИЛАНД</div><div style="font-size:14px;color:#fff;margin-top:4px">Носок за 26 010 ₽</div><div style="font-size:11px;color:rgba(255,255,255,0.55)">один продал · второй сжёг</div></div>'+
+    '<div data-nav="behind_code80" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:8px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4)">12/2025 · CODE80</div><div style="font-size:14px;color:#fff;margin-top:4px">Съёмки с Code80</div><div style="font-size:11px;color:rgba(255,255,255,0.55)">клип «Не засыпай»</div></div>'+
+    '<div data-nav="behind_tommy" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:8px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4)">01/2025 · TOKYO</div><div style="font-size:14px;color:#fff;margin-top:4px">Tommy · Nettspend</div><div style="font-size:11px;color:rgba(255,255,255,0.55)">был фин. директором</div></div>'+
+    '<div data-nav="behind_jiguli" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:14px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4)">2024 · ЖИГУЛЁВСК</div><div style="font-size:14px;color:#fff;margin-top:4px">Съёмки «Жигулёвска»</div><div style="font-size:11px;color:rgba(255,255,255,0.55)">свой клип, свой город</div></div>'+
+    backBtn()+
+  '</div>'
+};
+
+screens.behind_code80 = {
+  label: 'за кадром · code80',
+  showBack: true,
+  html: ytEmbed('VE1RIG99CZY') +
+    '<div style="padding:14px;color:#e8e8ec">'+
+      '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px">— ЗА КАДРОМ · 12/2025 —</div>'+
+      '<div style="font-size:18px;font-weight:500;color:#fff">Съёмки с Code80</div>'+
+      '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 14px">клип «Не засыпай»</div>'+
+      '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:14px">Сняли вместе с Code80 — фитом, который зашёл многим. Это командная работа: две головы, две эстетики, один кадр.</div>'+
+      '<a href="https://www.youtube.com/watch?v=VE1RIG99CZY" target="_blank" rel="noopener" style="text-decoration:none;display:block"><div style="background:#ff0000;padding:10px 12px;border-radius:8px;display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="width:28px;height:28px;background:rgba(0,0,0,0.2);border-radius:6px;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:8px solid #fff;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px"></div></div><div style="flex:1"><div style="font-size:12px;color:#fff;font-weight:500">Открыть на YouTube</div><div style="font-size:10px;color:rgba(255,255,255,0.85)">в новой вкладке</div></div></div></a>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+navBtn('ВСЁ ЗА КАДРОМ','#закадром','behind')+backBtn()+'</div>'+
+    '</div>'
+};
+
+screens.behind_jiguli = {
+  label: 'за кадром · жигулёвск',
+  showBack: true,
+  html: ytEmbed('1gHfn0ymG-Q') +
+    '<div style="padding:14px;color:#e8e8ec">'+
+      '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px">— ЗА КАДРОМ · 2024 —</div>'+
+      '<div style="font-size:18px;font-weight:500;color:#fff">Как снимался «Жигулёвск»</div>'+
+      '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 14px">мой клип · мой город · мой продакшн</div>'+
+      '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:14px">Один из самых личных треков. И один из самых сложных в съёмке. Снимали у себя дома — там, где я вырос.</div>'+
+      '<a href="https://www.youtube.com/watch?v=1gHfn0ymG-Q" target="_blank" rel="noopener" style="text-decoration:none;display:block"><div style="background:#ff0000;padding:10px 12px;border-radius:8px;display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="width:28px;height:28px;background:rgba(0,0,0,0.2);border-radius:6px;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:8px solid #fff;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px"></div></div><div style="flex:1"><div style="font-size:12px;color:#fff;font-weight:500">Открыть на YouTube</div><div style="font-size:10px;color:rgba(255,255,255,0.85)">в новой вкладке</div></div></div></a>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+navBtn('ВСЁ ЗА КАДРОМ','#закадром','behind')+backBtn()+'</div>'+
+    '</div>'
+};
+
+screens.behind_sock = {
+  label: 'за кадром · носок',
+  showBack: true,
+  html: '<div style="background:radial-gradient(ellipse at center,#4a1a08 0%,#2a0a04 40%,#0a0504 100%);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative"><div style="width:60px;height:60px;background:rgba(0,0,0,0.55);border:1.5px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:16px solid #fff;border-top:10px solid transparent;border-bottom:10px solid transparent;margin-left:4px"></div></div><div style="position:absolute;top:10px;left:12px;font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.7);letter-spacing:1.5px">● ЗА КАДРОМ · ТАИЛАНД</div></div>'+
+    '<div style="padding:14px;color:#e8e8ec">'+
+      '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px">— ЗА КАДРОМ · 02/2026 —</div>'+
+      '<div style="font-size:18px;font-weight:500;color:#fff">Один носок за 26 010 ₽</div>'+
+      '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 14px">аукцион в комментариях · Таиланд</div>'+
+      '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:14px">Один продал на аукционе. Второй сжёг. Тот, кто купил первый — обладатель единственного в мире. Я не продаю мерч. Я продаю редкость.</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px"><div style="background:rgba(255,255,255,0.06);padding:10px;border-radius:6px;text-align:center"><div style="font-size:20px;font-weight:500;color:#fff">26 010</div><div style="font-family:ui-monospace,monospace;font-size:8px;color:rgba(255,255,255,0.5)">₽ · ПРОДАН</div></div><div style="background:rgba(255,255,255,0.06);padding:10px;border-radius:6px;text-align:center"><div style="font-size:20px;font-weight:500;color:#fff">0</div><div style="font-family:ui-monospace,monospace;font-size:8px;color:rgba(255,255,255,0.5)">ОСТАЛОСЬ В МИРЕ</div></div></div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+navBtn('ВСЁ ЗА КАДРОМ','#закадром','behind')+backBtn()+'</div>'+
+    '</div>'
+};
+
+screens.behind_tommy = {
+  label: 'за кадром · токио',
+  showBack: true,
+  html: '<div style="background:linear-gradient(180deg,#1a0f1f 0%,#2a1530 25%,#3a2540 45%,#5a3060 65%,#ff3c5c 100%);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative"><div style="width:60px;height:60px;background:rgba(0,0,0,0.55);border:1.5px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:16px solid #fff;border-top:10px solid transparent;border-bottom:10px solid transparent;margin-left:4px"></div></div><div style="position:absolute;top:10px;left:12px;font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.7);letter-spacing:1.5px">● ЗА КАДРОМ · TOKYO · 01/2025</div></div>'+
+    '<div style="padding:14px;color:#e8e8ec">'+
+      '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px">— ЗА КАДРОМ · 01/2025 —</div>'+
+      '<div style="font-size:18px;font-weight:500;color:#fff">Токио, январь 2025</div>'+
+      '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 14px">съёмки Nettspend — «Tommy»<br>я был финансовым директором</div>'+
+      '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:14px">Зимой летал в Токио на съёмки клипа американского рэпера Nettspend. Не как артист — как финансовый директор.</div>'+
+      '<div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);padding:12px;border-radius:8px;margin-bottom:14px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1.5px;margin-bottom:4px">КТО ТАКОЙ NETTSPEND</div><div style="font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:10px">Американский рэпер новой волны. Та же сцена, что Yeat и Playboi Carti.</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><div style="background:rgba(255,255,255,0.06);padding:8px;border-radius:6px"><div style="font-size:16px;font-weight:500;color:#fff">1,7M</div><div style="font-family:ui-monospace,monospace;font-size:8px;color:rgba(255,255,255,0.5)">СЛУШ. / МЕС</div></div><div style="background:rgba(255,255,255,0.06);padding:8px;border-radius:6px"><div style="font-size:16px;font-weight:500;color:#fff">468K</div><div style="font-family:ui-monospace,monospace;font-size:8px;color:rgba(255,255,255,0.5)">ПОДПИСЧИКОВ</div></div></div></div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+navBtn('ВСЁ ЗА КАДРОМ','#закадром','behind')+backBtn()+'</div>'+
+    '</div>'
+};
+
+screens.auctions = {
+  label: 'аукционы',
+  showBack: true,
+  html: '<div style="padding:14px;color:#e8e8ec">'+
+    '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px">— АУКЦИОНЫ —</div>'+
+    '<div style="font-size:20px;font-weight:500;color:#fff">Редкости от меня</div>'+
+    '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 18px">аукционы в комментариях канала</div>'+
+    '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:16px">Я не продаю мерч. Я продаю редкость. Каждый аукцион — это один объект в одном экземпляре. Остальные копии уничтожаются.</div>'+
+    '<div data-nav="behind_sock" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:14px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4)">ПРОДАН · 02/2026</div><div style="font-size:14px;color:#fff;margin-top:4px">Носок · 26 010 ₽</div><div style="font-size:11px;color:rgba(255,255,255,0.55)">один в мире · второй сожжён</div></div>'+
+    '<div style="background:rgba(255,255,255,0.04);border:0.5px dashed rgba(255,255,255,0.15);border-radius:8px;padding:14px;text-align:center;margin-bottom:14px"><div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.4)">NEXT AUCTION</div><div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px">скоро · следи за каналом</div></div>'+
+    backBtn()+
+  '</div>'
+};
+
+screens.live = {
+  label: 'живьём',
+  showBack: true,
+  html: '<div style="padding:14px;color:#e8e8ec">'+
+    '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px">— ЖИВЬЁМ · ДАТЫ —</div>'+
+    '<div style="font-size:20px;font-weight:500;color:#fff">Концерты</div>'+
+    '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 22px">где меня можно увидеть вживую</div>'+
+    '<div style="background:rgba(255,255,255,0.04);border:0.5px dashed rgba(255,255,255,0.2);border-radius:8px;padding:22px 16px;margin-bottom:18px;text-align:center"><div style="font-family:ui-monospace,monospace;font-size:32px;color:rgba(255,255,255,0.25);letter-spacing:4px;margin-bottom:14px">— — —</div><div style="font-size:13px;color:rgba(255,255,255,0.7);line-height:1.65">Первый концерт будет только после того, как интернет-легенда KONDRASHIN выйдет из нижнего интернета, наконец-то начнёт продвигать свои треки в TikTok и станет популярным.</div><div style="font-family:serif;font-style:italic;font-size:13px;color:rgba(255,255,255,0.85);margin-top:14px">Это будет уже скоро.</div><div style="font-family:serif;font-style:italic;font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px">Ожидаем.</div></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+navBtn('TIKTOK','подписаться','#')+backBtn()+'</div>'+
+  '</div>'
+};
+
+screens.contact = {
+  label: 'связь',
+  showBack: true,
+  html: '<div style="padding:14px;color:#e8e8ec">'+
+    '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px">— СВЯЗЬ —</div>'+
+    '<div style="font-size:20px;font-weight:500;color:#fff">Связаться с KONDRASHIN</div>'+
+    '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 18px">нет возможности</div>'+
+    '<div style="font-size:14px;color:rgba(255,255,255,0.85);line-height:1.65;margin-bottom:18px">Это замкнутый человек, которому не интересны люди.<br><br>Точнее интересны — но только лишь немногие.<br><br>Либо вы должны предложить ему деньги.</div>'+
+    '<div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.15);border-radius:8px;padding:14px;margin-bottom:14px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:2px;margin-bottom:10px">ВАША СТАВКА (₽)</div><div style="background:#050508;border:0.5px solid rgba(255,255,255,0.15);border-radius:6px;padding:12px;margin-bottom:10px;text-align:center"><div style="font-family:ui-monospace,monospace;font-size:24px;color:rgba(255,255,255,0.7)">100 000</div></div><div style="background:rgba(255,255,255,0.08);border:0.5px solid rgba(255,255,255,0.2);padding:8px 10px;border-radius:6px;margin-bottom:10px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.5)">ВАШ TELEGRAM</div><div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:2px">@username</div></div><div style="background:#fff;color:#000;padding:9px;border-radius:6px;text-align:center;font-size:13px;font-weight:500;margin-bottom:12px">ПРЕДЛОЖИТЬ СТАВКУ</div><div style="background:rgba(255,40,40,0.08);border:0.5px solid rgba(255,80,80,0.3);border-radius:6px;padding:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div style="width:14px;height:14px;background:rgba(255,80,80,0.7);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-size:10px;color:#fff">!</div><div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,150,150,0.95)">ERROR 404</div></div><div style="font-size:11px;color:rgba(255,255,255,0.7);line-height:1.4">Этот пункт — единственный, который не доделали в этом сайте. Поэтому даже с деньгами не получится.</div></div></div>'+
+    '<div style="background:rgba(0,0,0,0.4);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:14px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:2px;margin-bottom:6px">ЕСЛИ СТАВКА &lt; 100 000 ₽</div><div style="font-size:14px;color:#fff;font-weight:500">Нищеброд не может связаться с KONDRASHIN.</div></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+navBtn('АУКЦИОНЫ','редкости','auctions')+backBtn()+'</div>'+
+  '</div>'
+};
+
+function render(key){
+  const screen = screens[key];
+  if(!screen) return;
+  document.getElementById('screen-container').innerHTML = screen.html;
+  document.getElementById('screen-label').textContent = screen.label;
+  document.getElementById('back-btn').style.display = screen.showBack ? 'block' : 'none';
+  document.querySelectorAll('[data-nav]').forEach(function(el){
+    el.addEventListener('click', function(e){
+      e.preventDefault();
+      const target = el.getAttribute('data-nav');
+      if(target === '#') return;
+      if(target === 'home'){ history.length = 0; history.push('home'); }
+      else { history.push(target); }
+      render(target);
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  });
+}
+
+document.getElementById('back-btn').addEventListener('click', function(){
+  if(history.length > 1){
+    history.pop();
+    render(history[history.length-1]);
+  }
+});
+
+render('home');
+})();
+</script>
+</body>
+</html>
