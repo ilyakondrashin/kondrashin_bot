@@ -36,7 +36,7 @@ body{background:#1a1a22;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",
     </div>
     <div id="screen-container" class="screen-container"></div>
   </div>
-  <div class="app-credit">канал · v2 · реальные YouTube-плееры</div>
+  <div class="app-credit"></div>
 </div>
 
 <script>
@@ -475,10 +475,53 @@ screens.behind = {
     '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px">— ЗА КАДРОМ —</div>'+
     '<div style="font-size:20px;font-weight:500;color:#fff">Внутренняя кухня</div>'+
     '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 18px">всё, что не вошло в клипы</div>'+
-    '<div data-nav="behind_sock" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:8px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4)">02/2026 · ТАИЛАНД</div><div style="font-size:14px;color:#fff;margin-top:4px">Носок за 26 010 ₽</div><div style="font-size:11px;color:rgba(255,255,255,0.55)">один продал · второй сжёг</div></div>'+
-    '<div data-nav="behind_code80" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:8px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4)">12/2025 · CODE80</div><div style="font-size:14px;color:#fff;margin-top:4px">Съёмки с Code80</div><div style="font-size:11px;color:rgba(255,255,255,0.55)">клип «Не засыпай»</div></div>'+
-    '<div data-nav="behind_tommy" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:8px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4)">01/2025 · TOKYO</div><div style="font-size:14px;color:#fff;margin-top:4px">Tommy · Nettspend</div><div style="font-size:11px;color:rgba(255,255,255,0.55)">был фин. директором</div></div>'+
-    '<div data-nav="behind_jiguli" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:14px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4)">2024 · ЖИГУЛЁВСК</div><div style="font-size:14px;color:#fff;margin-top:4px">Съёмки «Жигулёвска»</div><div style="font-size:11px;color:rgba(255,255,255,0.55)">свой клип, свой город</div></div>'+
+
+    // Носок — видео сжигания в миниатюре
+    '<div data-nav="behind_sock" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px">'+
+      '<div style="width:64px;height:64px;border-radius:6px;flex-shrink:0;overflow:hidden;background:#000;position:relative">'+
+        '<video src="sock_burn_preview.mp4" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video>'+
+        '<div style="position:absolute;top:3px;right:3px;background:rgba(255,80,200,0.9);padding:1px 4px;border-radius:3px;font-family:ui-monospace,monospace;font-size:7px;color:#fff;letter-spacing:0.5px">▶ GIF</div>'+
+      '</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px">02/2026 · ТАИЛАНД</div>'+
+        '<div style="font-size:14px;color:#fff;margin-top:3px;font-weight:500">Носок за 26 010 ₽</div>'+
+        '<div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:1px">один продал · второй сжёг</div>'+
+      '</div>'+
+    '</div>'+
+
+    // Code80 — YouTube превью клипа BTS
+    '<div data-nav="behind_code80" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px">'+
+      '<div style="width:64px;height:64px;border-radius:6px;flex-shrink:0;overflow:hidden;background:#000"><img src="https://img.youtube.com/vi/VE1RIG99CZY/hqdefault.jpg" alt="Code80 BTS" style="width:100%;height:100%;object-fit:cover;display:block"></div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px">12/2025 · CODE80</div>'+
+        '<div style="font-size:14px;color:#fff;margin-top:3px;font-weight:500">Съёмки с Code80</div>'+
+        '<div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:1px">клип «Не засыпай»</div>'+
+      '</div>'+
+    '</div>'+
+
+    // Tommy / Nettspend — авто-играющее MP4-видео в миниатюре
+    '<div data-nav="behind_tommy" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px">'+
+      '<div style="width:64px;height:64px;border-radius:6px;flex-shrink:0;overflow:hidden;background:#000;position:relative">'+
+        '<video src="nettspend_preview.mp4" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video>'+
+        '<div style="position:absolute;top:3px;right:3px;background:rgba(255,80,200,0.9);padding:1px 4px;border-radius:3px;font-family:ui-monospace,monospace;font-size:7px;color:#fff;letter-spacing:0.5px">▶ GIF</div>'+
+      '</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px">01/2025 · TOKYO</div>'+
+        '<div style="font-size:14px;color:#fff;margin-top:3px;font-weight:500">Tommy · Nettspend</div>'+
+        '<div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:1px">был фин. директором</div>'+
+      '</div>'+
+    '</div>'+
+
+    // Жигулёвск — YouTube превью BTS
+    '<div data-nav="behind_jiguli" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:12px">'+
+      '<div style="width:64px;height:64px;border-radius:6px;flex-shrink:0;overflow:hidden;background:#000"><img src="https://img.youtube.com/vi/1gHfn0ymG-Q/hqdefault.jpg" alt="Жигулёвск BTS" style="width:100%;height:100%;object-fit:cover;display:block"></div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px">2024 · ЖИГУЛЁВСК</div>'+
+        '<div style="font-size:14px;color:#fff;margin-top:3px;font-weight:500">Съёмки «Жигулёвска»</div>'+
+        '<div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:1px">свой клип, свой город</div>'+
+      '</div>'+
+    '</div>'+
+
     backBtn()+
   '</div>'
 };
@@ -505,7 +548,7 @@ screens.behind_jiguli = {
       '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px">— ЗА КАДРОМ · 2024 —</div>'+
       '<div style="font-size:18px;font-weight:500;color:#fff">Как снимался «Жигулёвск»</div>'+
       '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 14px">мой клип · мой город · мой продакшн</div>'+
-      '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:14px">Один из самых личных треков. И один из самых сложных в съёмке. Снимали у себя дома — там, где я вырос.</div>'+
+      '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:14px">Один из самых личных треков. Снимали у себя дома — там, где я вырос.</div>'+
       '<a href="https://www.youtube.com/watch?v=1gHfn0ymG-Q" target="_blank" rel="noopener" style="text-decoration:none;display:block"><div style="background:#ff0000;padding:10px 12px;border-radius:8px;display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="width:28px;height:28px;background:rgba(0,0,0,0.2);border-radius:6px;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:8px solid #fff;border-top:5px solid transparent;border-bottom:5px solid transparent;margin-left:2px"></div></div><div style="flex:1"><div style="font-size:12px;color:#fff;font-weight:500">Открыть на YouTube</div><div style="font-size:10px;color:rgba(255,255,255,0.85)">в новой вкладке</div></div></div></a>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+navBtn('ВСЁ ЗА КАДРОМ','#закадром','behind')+backBtn()+'</div>'+
     '</div>'
@@ -514,12 +557,15 @@ screens.behind_jiguli = {
 screens.behind_sock = {
   label: 'за кадром · носок',
   showBack: true,
-  html: '<div style="background:radial-gradient(ellipse at center,#4a1a08 0%,#2a0a04 40%,#0a0504 100%);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative"><div style="width:60px;height:60px;background:rgba(0,0,0,0.55);border:1.5px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:16px solid #fff;border-top:10px solid transparent;border-bottom:10px solid transparent;margin-left:4px"></div></div><div style="position:absolute;top:10px;left:12px;font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.7);letter-spacing:1.5px">● ЗА КАДРОМ · ТАИЛАНД</div></div>'+
+  html: '<div style="position:relative;width:100%;background:#000;display:flex;align-items:center;justify-content:center;max-height:520px;overflow:hidden">'+
+    '<video src="sock_burn_preview.mp4" autoplay loop muted playsinline style="max-width:100%;max-height:520px;display:block"></video>'+
+    '<div style="position:absolute;top:10px;left:12px;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);padding:3px 8px;border-radius:4px;font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.9);letter-spacing:1.5px">● ЗА КАДРОМ · ТАИЛАНД · 02/2026</div>'+
+    '</div>'+
     '<div style="padding:14px;color:#e8e8ec">'+
       '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px">— ЗА КАДРОМ · 02/2026 —</div>'+
       '<div style="font-size:18px;font-weight:500;color:#fff">Один носок за 26 010 ₽</div>'+
       '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 14px">аукцион в комментариях · Таиланд</div>'+
-      '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:14px">Один продал на аукционе. Второй сжёг. Тот, кто купил первый — обладатель единственного в мире. Я не продаю мерч. Я продаю редкость.</div>'+
+      '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:14px">Один продал на аукционе. Второй сжёг — в прямой трансляции, на глазах у 53 подписчиков. Тот, кто купил первый — обладатель единственного в мире. Я не продаю мерч. Я продаю редкость.</div>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px"><div style="background:rgba(255,255,255,0.06);padding:10px;border-radius:6px;text-align:center"><div style="font-size:20px;font-weight:500;color:#fff">26 010</div><div style="font-family:ui-monospace,monospace;font-size:8px;color:rgba(255,255,255,0.5)">₽ · ПРОДАН</div></div><div style="background:rgba(255,255,255,0.06);padding:10px;border-radius:6px;text-align:center"><div style="font-size:20px;font-weight:500;color:#fff">0</div><div style="font-family:ui-monospace,monospace;font-size:8px;color:rgba(255,255,255,0.5)">ОСТАЛОСЬ В МИРЕ</div></div></div>'+
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+navBtn('ВСЁ ЗА КАДРОМ','#закадром','behind')+backBtn()+'</div>'+
     '</div>'
@@ -528,7 +574,10 @@ screens.behind_sock = {
 screens.behind_tommy = {
   label: 'за кадром · токио',
   showBack: true,
-  html: '<div style="background:linear-gradient(180deg,#1a0f1f 0%,#2a1530 25%,#3a2540 45%,#5a3060 65%,#ff3c5c 100%);aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative"><div style="width:60px;height:60px;background:rgba(0,0,0,0.55);border:1.5px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center"><div style="width:0;height:0;border-left:16px solid #fff;border-top:10px solid transparent;border-bottom:10px solid transparent;margin-left:4px"></div></div><div style="position:absolute;top:10px;left:12px;font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.7);letter-spacing:1.5px">● ЗА КАДРОМ · TOKYO · 01/2025</div></div>'+
+  html: '<div style="position:relative;width:100%;background:#000;display:flex;align-items:center;justify-content:center;max-height:520px;overflow:hidden">'+
+    '<video src="nettspend_preview.mp4" autoplay loop muted playsinline style="max-width:100%;max-height:520px;display:block"></video>'+
+    '<div style="position:absolute;top:10px;left:12px;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);padding:3px 8px;border-radius:4px;font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.9);letter-spacing:1.5px">● ЗА КАДРОМ · TOKYO · 01/2025</div>'+
+    '</div>'+
     '<div style="padding:14px;color:#e8e8ec">'+
       '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:6px">— ЗА КАДРОМ · 01/2025 —</div>'+
       '<div style="font-size:18px;font-weight:500;color:#fff">Токио, январь 2025</div>'+
@@ -547,7 +596,17 @@ screens.auctions = {
     '<div style="font-size:20px;font-weight:500;color:#fff">Редкости от меня</div>'+
     '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 18px">аукционы в комментариях канала</div>'+
     '<div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:16px">Я не продаю мерч. Я продаю редкость. Каждый аукцион — это один объект в одном экземпляре. Остальные копии уничтожаются.</div>'+
-    '<div data-nav="behind_sock" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:14px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4)">ПРОДАН · 02/2026</div><div style="font-size:14px;color:#fff;margin-top:4px">Носок · 26 010 ₽</div><div style="font-size:11px;color:rgba(255,255,255,0.55)">один в мире · второй сожжён</div></div>'+
+    '<div data-nav="behind_sock" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:12px">'+
+      '<div style="width:64px;height:64px;border-radius:6px;flex-shrink:0;overflow:hidden;background:#000;position:relative">'+
+        '<video src="sock_burn_preview.mp4" autoplay loop muted playsinline style="width:100%;height:100%;object-fit:cover;display:block"></video>'+
+        '<div style="position:absolute;top:3px;right:3px;background:rgba(255,80,200,0.9);padding:1px 4px;border-radius:3px;font-family:ui-monospace,monospace;font-size:7px;color:#fff;letter-spacing:0.5px">▶ GIF</div>'+
+      '</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1px">ПРОДАН · 02/2026</div>'+
+        '<div style="font-size:14px;color:#fff;margin-top:3px;font-weight:500">Носок · 26 010 ₽</div>'+
+        '<div style="font-size:11px;color:rgba(255,255,255,0.55);margin-top:1px">один в мире · второй сожжён</div>'+
+      '</div>'+
+    '</div>'+
     '<div style="background:rgba(255,255,255,0.04);border:0.5px dashed rgba(255,255,255,0.15);border-radius:8px;padding:14px;text-align:center;margin-bottom:14px"><div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.4)">NEXT AUCTION</div><div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px">скоро · следи за каналом</div></div>'+
     backBtn()+
   '</div>'
@@ -577,7 +636,7 @@ screens.contact = {
     '<div style="font-size:12px;color:rgba(255,255,255,0.55);margin:4px 0 18px">нет возможности</div>'+
     '<div style="font-size:14px;color:rgba(255,255,255,0.85);line-height:1.65;margin-bottom:18px">Это замкнутый человек, которому не интересны люди.<br><br>Точнее интересны — но только лишь немногие.<br><br>Либо вы должны предложить ему деньги.</div>'+
     '<div style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.15);border-radius:8px;padding:14px;margin-bottom:14px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.5);letter-spacing:2px;margin-bottom:10px">ВАША СТАВКА (₽)</div><div style="background:#050508;border:0.5px solid rgba(255,255,255,0.15);border-radius:6px;padding:12px;margin-bottom:10px;text-align:center"><div style="font-family:ui-monospace,monospace;font-size:24px;color:rgba(255,255,255,0.7)">100 000</div></div><div style="background:rgba(255,255,255,0.08);border:0.5px solid rgba(255,255,255,0.2);padding:8px 10px;border-radius:6px;margin-bottom:10px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.5)">ВАШ TELEGRAM</div><div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:2px">@username</div></div><div style="background:#fff;color:#000;padding:9px;border-radius:6px;text-align:center;font-size:13px;font-weight:500;margin-bottom:12px">ПРЕДЛОЖИТЬ СТАВКУ</div><div style="background:rgba(255,40,40,0.08);border:0.5px solid rgba(255,80,80,0.3);border-radius:6px;padding:10px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div style="width:14px;height:14px;background:rgba(255,80,80,0.7);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;font-size:10px;color:#fff">!</div><div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,150,150,0.95)">ERROR 404</div></div><div style="font-size:11px;color:rgba(255,255,255,0.7);line-height:1.4">Этот пункт — единственный, который не доделали в этом сайте. Поэтому даже с деньгами не получится.</div></div></div>'+
-    '<div style="background:rgba(0,0,0,0.4);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:14px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:2px;margin-bottom:6px">ЕСЛИ СТАВКА &lt; 100 000 ₽</div><div style="font-size:14px;color:#fff;font-weight:500">Нищеброд не может связаться с KONDRASHIN.</div></div>'+
+    '<div style="background:rgba(0,0,0,0.4);border:0.5px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;margin-bottom:14px"><div style="font-family:ui-monospace,monospace;font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:2px;margin-bottom:6px">ЕСЛИ СТАВКА &lt; 100 000 ₽</div><div style="font-size:14px;color:#fff;font-weight:500">Вы не можете связаться со мной.</div></div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'+navBtn('АУКЦИОНЫ','редкости','auctions')+backBtn()+'</div>'+
   '</div>'
 };
