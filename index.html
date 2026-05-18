@@ -271,7 +271,10 @@ screens.home = {
   label: 'канал · закреп',
   showBack: false,
   html: 
-    ytEmbed('zU6xSeFGEk0') +
+    '<div style="position:relative;width:100%;background:#000;overflow:hidden">'+
+      '<video src="main_hero.mp4" autoplay loop muted playsinline style="width:100%;display:block"></video>'+
+      '<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 50%,rgba(0,0,0,0.4) 100%);pointer-events:none"></div>'+
+    '</div>' +
     '<div style="padding:14px;color:#e8e8ec">'+
       '<div style="font-family:ui-monospace,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;margin-bottom:8px">PINNED · ЗАКРЕП</div>'+
       '<div style="font-size:18px;font-weight:500;color:#fff;letter-spacing:2px">KONDRASHIN</div>'+
